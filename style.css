@@ -1,0 +1,41 @@
+body{
+    background-color: #443f41;
+    justify-content: center;
+    
+}
+form
+{
+   
+    
+    align-items: center;
+    width:70%;
+    height: 70%;
+    margin: auto;
+    background-color: rgb(209, 201, 201);
+    border-color: thistle;
+        width: 80%;
+        height: 90%;
+
+        border: none;
+        outline: none;
+       
+        border-radius: 40%;
+       }
+
+fieldset{
+    border-style: ridge;
+    border-color: rgb(22, 22, 43);
+}
+legend{
+    color:rgb(84, 76, 76);
+    size: 50px;
+    font-style: oblique;
+}
+ 
+  
+    /*
+    background-color: grey
+   
+
+  
+
