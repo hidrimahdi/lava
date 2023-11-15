@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>add event</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #81318d;
+          font-family: Arial, sans-serif;
+        }
+        form {
+            position: absolute;
+            inset: 4px;
+            background: #a350af;
+            padding: 50px 40px;
+            border-radius: 8px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+          max-width: 400px;
+          margin: 0 auto;
+        }
+        label {
+            position: relative;
+            width: 380px;
+            height: 20px;
+            background-color #a350af;
+            border-radius: 8px;
+          display: flex;
+          margin-bottom: 5px;
+        }
+        input, select {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 10px;
+          box-sizing: border-box;
+          background: transparent;
+          outline: none;
+          box-shadow: none;
+          color: #23242a;
+
+        }
+        button {
+          padding: 10px 20px;
+          background-color: #ff0000;
+          color: #fff;
+          border: none;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #cc0000;
+        }
+      </style>
+</head>
+<body>
+        
+    <form id="eventForm" action="#" method="post">
+       <h1>Add Event</h1> 
+       <!-- Champ nom-event -->
+        <label for="eventName">Nom de l'événement:</label>
+        <input type="text" id="eventName" name="eventName" required><br>
+
+        
+        <!-- Champ date-event -->
+        <label for="eventDate">Date de l'événement:</label>
+        <input type="date" id="eventDate" name="eventDate" required><br>
+        
+        <!-- Champ place -->
+        <label for="eventPlace">Lieu de l'événement:</label>
+        <input type="text" id="eventPlace" name="eventPlace" required><br>
+        
+        <!-- Champ maximum-remise -->
+        <label for="eventMaxDiscount">Maximum de remise:</label>
+        <input type="number" id="eventMaxDiscount" name="eventMaxDiscount" required><br>
+        
+        <!-- Bouton pour soumettre le formulaire -->
+        <button type="submit">Ajouter/Modifier</button>
+    </form>
+    <!--javascript-->
+    <script>
+        document.getElementById('eventForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Empêche la soumission du formulaire par défaut
+    
+    // Récupérer les valeurs saisies dans les champs
+    const eventName = document.getElementById('eventName').value;
+    const eventDate = document.getElementById('eventDate').value;
+    const eventPlace = document.getElementById('eventPlace').value;
+    const eventMaxDiscount = document.getElementById('eventMaxDiscount').value;
+    
+    // Envoi des données au serveur pour traitement (AJAX ou Fetch)
+    // Exemple d'utilisation de fetch pour envoyer les données
+    fetch('/create-event', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            eventName: eventName,
+            eventDate: eventDate,
+            eventPlace: eventPlace,
+            eventMaxDiscount: eventMaxDiscount
+        }),
+    })
+    .then(response => {
+        // Traiter la réponse du serveur
+    })
+    .catch(error => {
+        // Gérer les erreurs
+    });
+});
+    </script>
+
+</body>
+</html>
