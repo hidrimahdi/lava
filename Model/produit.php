@@ -1,50 +1,65 @@
 <?PHP
-	class produit{
+	class produit {
 		private $id;
 		private $title;
+		private $description;
 		private $category;
-        private $description;
-		private $price;	
-		function __construct( $title, $category,$description,$price)
-        {
-            $this->title = $title;
-            $this->category = $category;
-            $this->description = $description;
+		private $price;
+		private $image;
+	
+		function __construct($title, $description, $category, $price, $image) {
+			$this->title = $title;
+			$this->description = $description;
+			$this->category = $category;
 			$this->price = $price;
+			$this->image = $image;
 		}
-		
-		function getID(){
+	
+		function getID() {
 			return $this->id;
 		}
-		function getTitle(){
+	
+		function getTitle() {
 			return $this->title;
 		}
-		function getDescription(){
+	
+		function getDescription() {
 			return $this->description;
 		}
-		
-        function getCategory(){
+	
+		function getCategory() {
 			return $this->category;
 		}
-		function getPrice(){
+	
+		function getPrice() {
 			return $this->price;
 		}
-       
-		
-		function setTitle($title): void{
-			$this->title=$title;
+	
+		public function getImage() {
+			return $this->image;
 		}
-		function setDescription($description): void{
-			$this->description=$description;
+	
+		function setTitle($title): void {
+			$this->title = $title;
 		}
-		
-        function setCategory($category): void{
-			$this->category=$category;
+	
+		function setDescription($description): void {
+			$this->description = $description;
 		}
-		function setPrice($price): void{
-			$this->price=$price;
+	
+		function setCategory($category): void {
+			$this->category = $category;
 		}
-       
+	
+		function setPrice($price): void {
+			$this->price = $price;
+		}
+	
+		function setImage($imagePath) {
+			$this->image = $imagePath;
+		}
 	}
+	
+	
 
 ?>
