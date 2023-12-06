@@ -66,7 +66,7 @@ if(isset($_POST['ajout']))
             <nav class="site-navigation text-right text-md-center" role="navigation">
               <ul class="site-menu js-clone-nav d-none d-lg-block">
                 <li><a href="index.html">Home</a></li>
-                <li><a href="shop.html">Store</a></li>
+                <li><a href="store.php">Store</a></li>
               
                 <li><a href="about.html">About</a></li>
                 <li class="active"><a href="http://localhost/Project/Dashbord/View/addCommande.php">Commande</a></li>

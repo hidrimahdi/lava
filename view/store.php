@@ -1,42 +1,29 @@
 <?php
-    require_once 'C:/xampp/htdocs/Project/Dashbord/Controller/commandeC.php';
-    require_once 'C:/xampp/htdocs/Project/Dashbord/Model/commande.php';
+include_once("C:/xampp/htdocs/Project/config.php");
 
-    $error = "";
-    // create user
-    $commande = null;
-    // create an instance of the controller
-    $commandeC= new CommandeC();
-    if (
-        isset($_POST["nom"]) &&
-        isset($_POST["adresse"]) &&
-        isset($_POST["num"])  &&
-        isset($_POST["idProduit"]) 
-        
-    ) {
-        if (
-            !empty($_POST["nom"])  && 
-            !empty($_POST["adresse"]) && 
-            !empty($_POST["num"]) && 
-            !empty($_POST["idProduit"]) 
-            
-        )
-         {
-            $commande = new commande(
-                $_POST['nom'], 
-                $_POST['adresse'], 
-                $_POST['num'], 
-                $_POST['idProduit']
-            );
-			$commandeC->ajouterCommande($commande);
-      header ('Location:tableCommande.php');
-        }
-        else
-            $error = "Missing information";
-    }  
+// Récupération des produits depuis la base de données
+$conn = (new config())->getConnexion();
 
-    $liste=$commandeC->afficherCommande();
+// Initialisation de la variable $products
+$products = array();
+
+// Si une recherche est effectuée
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+  $search = $_GET['search'];
+
+  // Requête SQL pour filtrer les produits par titre
+  $stmt = $conn->prepare("SELECT * FROM produit WHERE title LIKE :search");
+  $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+  $stmt->execute();
+  $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+  // Si aucune recherche, récupérer tous les produits
+  $stmt = $conn->prepare("SELECT * FROM produit");
+  $stmt->execute();
+  $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -88,10 +75,10 @@
             <nav class="site-navigation text-right text-md-center" role="navigation">
               <ul class="site-menu js-clone-nav d-none d-lg-block">
                 <li><a href="index.html">Home</a></li>
-                <li><a href="store.php">Store</a></li>
+                <li class="active"><a href="store.html">Store</a></li>
               
                 <li><a href="http://localhost/Project/Dashbord/View/tableRec.php">My Products</a></li>
-                <li class="active"><a href="http://localhost/Project/Dashbord/View/addCommande.php">Commande</a></li>
+                <li class=""><a href="http://localhost/Project/Dashbord/View/addCommande.php">Commande</a></li>
                 <li class=""><a href="http://localhost/Project/Dashbord/View/add.php">Product</a></li>
               </ul>
             </nav>
@@ -114,7 +101,7 @@
         <div class="row">
           <div class="col-md-12 mb-0">
             <a href="index.html">Home</a> <span class="mx-2 mb-0">/</span>
-            <strong class="text-black">Commands</strong>
+            <strong class="text-black">Store</strong>
           </div>
         </div>
       </div>
@@ -124,85 +111,81 @@
       <div class="container">
         <div class="row">
           <div class="col-md-12">
-            <h2 class="h3 mb-5 text-black">Add Commande</h2>
-          </div>
-          <div class="col-md-12">
-    
-            <form id="form" name="form" action="#" method="post">
-    
-              <div class="p-3 p-lg-5 border">
-                <div class="form-group row">
-                  <div class="col-md-6">
-                    <label for="c_fname" class="text-black"> Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="nom" id="nom">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-md-12">
-                    <label for="c_email" class="text-black">adress <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="adresse" name="adresse" placeholder="">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-md-12">
-                    <label for="c_email" class="text-black">Phone Number <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="num" name="num" placeholder="">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-md-12">
-                    <label for="c_email" class="text-black">idProduct <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="idProduit" name="idProduit" placeholder="">
-                  </div>
-                </div>
-              
-    
-                <div class="form-group row">
-                  <div class="col-lg-12">
-                    <input type="submit" class="btn btn-primary btn-lg btn-block" value="Add Commande">
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
-          
-        </div>
-      </div>
-    </div>
+            <h2 class="h3 mb-5 text-black"> Store</h2>
+            <form method="GET" action="store.php">
+            <div class="form-group">
+              <input type="text" class="form-control" name="search" placeholder="Search by title">
+              <input type="submit" value="Search" class="btn btn-primary mt-2">
+            </div>
+          </form>
+            
+            <body>
 
-
-
-    <div class="site-section bg-primary">
-      <div class="container">
+            <div class="container">
+        <h1>Produits</h1>
         <div class="row">
-          <div class="col-12">
-            <h2 class="text-white mb-4">Offices</h2>
-          </div>
-          <div class="col-lg-4">
-            <div class="p-4 bg-white mb-3 rounded">
-              <span class="d-block text-black h6 text-uppercase">New York</span>
-              <p class="mb-0">203 Fake St. Mountain View, San Francisco, California, USA</p>
-            </div>
-          </div>
-          <div class="col-lg-4">
-            <div class="p-4 bg-white mb-3 rounded">
-              <span class="d-block text-black h6 text-uppercase">London</span>
-              <p class="mb-0">203 Fake St. Mountain View, San Francisco, California, USA</p>
-            </div>
-          </div>
-          <div class="col-lg-4">
-            <div class="p-4 bg-white mb-3 rounded">
-              <span class="d-block text-black h6 text-uppercase">Canada</span>
-              <p class="mb-0">203 Fake St. Mountain View, San Francisco, California, USA</p>
-            </div>
-          </div>
+            <?php foreach ($products as $product) : ?>
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                    <?php 
+            $imagePath = $product['image'];
+            // Vérifier le chemin de l'image pour déboguer
+
+            ?>
+            <img src="<?php echo $product['image']; ?>" class="card-img-top" alt="Image du Produit">
+                        
+                        <div class="card-body">
+                            <h5 class="card-title"><?php echo $product['title']; ?></h5>
+                            <p class="card-text"><?php echo $product['description']; ?></p>
+                            <p class="card-text">
+                            Catégorie: 
+                            <?php 
+                                $categoryId = $product['idCad'];
+                                $stmt = $conn->prepare("SELECT nomCad FROM category WHERE idCad = :categoryId");
+                                $stmt->bindParam(':categoryId', $categoryId);
+                                $stmt->execute();
+                                $category = $stmt->fetch(PDO::FETCH_ASSOC);
+                                echo $category['nomCad'];
+                            ?>
+                        </p>
+                            <p class="card-text">Prix: <?php echo $product['price']; ?></p>
+                            <a href="#" class="btn btn-primary">Ajouter au Panier</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
-      </div>
-      
     </div>
 
+<!-- ... Vos liens vers les fichiers JavaScript, Bootstrap, etc. ... -->
 
-    <footer class="site-footer">
+</body>
+</div>
+<br>
+<table id="myTable" class="table table-striped" >
+    
+<style>
+    #myTable {
+        background-color: #f2f2f2; /* Gray background color */
+        color: black; /* Black text color */
+    }
+
+    #myTable th,
+    #myTable td {
+        border: 1px solid #ddd; /* Add a border to the table cells */
+        padding: 8px; /* Add padding to the table cells */
+    }
+
+    #myTable th {
+        background-color: #333; /* Dark gray background color for table headers */
+        color: white; /* White text color for table headers */
+    }
+</style>
+
+      
+                </tbody>
+            </table>
+            <footer class="site-footer">
       <div class="container">
         <div class="row">
           <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
@@ -217,10 +200,10 @@
           <div class="col-lg-3 mx-auto mb-5 mb-lg-0">
             <h3 class="footer-heading mb-4">Quick Links</h3>
             <ul class="list-unstyled">
-              <li><a href="#">Supplements</a></li>
-              <li><a href="#">Vitamins</a></li>
-              <li><a href="#">Diet &amp; Nutrition</a></li>
-              <li><a href="#">Tea &amp; Coffee</a></li>
+              <li><a href="#">peinture</a></li>
+              <li><a href="#">impression numerique</a></li>
+              <li><a href="#">poster &amp; tableau</a></li>
+              <li><a href="#">portrait &amp; paysage</a></li>
             </ul>
           </div>
 

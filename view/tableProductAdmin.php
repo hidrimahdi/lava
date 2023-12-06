@@ -1,18 +1,116 @@
 <?PHP
-	require ("C:/xampp/htdocs/Project/Dashbord/Controller/produitC.php");
+// Inclusion des fichiers et initialisation des données
+require 'c:/xampp/htdocs/Project/Dashbord/PHPMailer-master/PHPMailer-master/src/Exception.php';
+require 'c:/xampp/htdocs/Project/Dashbord/PHPMailer-master/PHPMailer-master/src/PHPMailer.php';
+require 'c:/xampp/htdocs/Project/Dashbord/PHPMailer-master/PHPMailer-master/src/SMTP.php';
+include_once ("C:/xampp/htdocs/Project/config.php");
+require ("C:/xampp/htdocs/Project/Dashbord/Controller/produitC.php");
 
-	$produit=new produitC();
-	$listeProduit=$produit->afficherProduit();
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+$config = new config();
+$conn = $config->getConnexion();
+
+$produit = new produitC();
+$listeProduit = $produit->afficherProduit();
+
+
+
+if (isset($_POST['submit'])) {
+    $listeProduit = $produit->afficherProduit();
+}
+
+if (isset($_POST['ajout'])) {
+    header('Location:../reclamation/add.php');
+}
+
+// Filtrage par catégorie
+if (isset($_POST['filterByCategory'])) {
+    $categoryFilter = $_POST['categoryFilter'];
+    if ($categoryFilter != 'all') {
+        $listeProduit = $produit->filterByCategory($categoryFilter, $conn);
+    } else {
+        $listeProduit = $produit->afficherProduit();
+    }
+}
+
+// Filtrage par prix
+if (isset($_POST['filterByPrice'])) {
+    $minPrice = $_POST['minPrice'];
+    $maxPrice = $_POST['maxPrice'];
+
+    if (!empty($minPrice) || !empty($maxPrice)) {
+        $listeProduit = $produit->filterByPriceRange($minPrice, $maxPrice, $conn);
+    } else {
+        // Gérer le cas où aucun prix n'est renseigné
+        // Par exemple, afficher tous les produits
+        $listeProduit = $produit->afficherProduit();
+    }
+}
+
+if (isset($_POST['confirmButton'])) {
+    $confirmProductId = $_POST['confirmProductId'];
+    // Mettez à jour le statut du produit dans la base de données
+    // ... code pour mettre à jour la confirmation dans la base de données ...
+
+    try {
+        // Envoi de l'e-mail de confirmation
+        $mail = new PHPMailer(true);
+
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';  // Specify main and backup SMTP servers
+        $mail->SMTPAuth = true;                               // Enable SMTP authentication
+        $mail->Username = 'mohamedfourat.rebai@esprit.tn';                 // SMTP username
+        $mail->Password = '191JMT2662';                           // SMTP password
+        $mail->SMTPSecure = 'tls';                            // Enable TLS encryption, `ssl` also accepted
+        $mail->Port = 587;                                    // TCP port to connect to
+
+        //Recipients
+        $mail->setFrom('mohamedfourat.rebai@esprit.tn', 'mohamed Fourat Rebai');
+        $mail->addAddress('fouratrebaipro@gmail.com');     // Add a recipient
+
+        // Content
+        $mail->isHTML(true);                                  // Set email format to HTML
+        $mail->Subject = 'product added succefully';
+        $mail->Body = 'A new product has been added to the system.';
+
+        $mail->send();
+        echo 'Message has been sent';
+    } catch (Exception $e) {
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
+
+} else {
+    $error = "Failed to upload image.";
+}
+if (isset($_POST['addCategoryButton'])) {
+
+    $newCategory = $_POST['newCategory'];
+    $newIdCad = $_POST['idCad'];
+    $newNomCad = $_POST['nomCad'];
+
+    // Requête SQL d'insertion avec une requête préparée
+    $query = "INSERT INTO category (idCad, nomCad) VALUES (:idCad, :nomCad)";
     
-if(isset($_POST['submit']))
-{
-    $listeProduit=$produit->afficherProduit();
+    // Préparation de la requête
+    $stmt = $conn->prepare($query);
+    
+    // Liaison des valeurs
+    $stmt->bindParam(':idCad', $newIdCad);
+    $stmt->bindParam(':nomCad', $newNomCad);
+    
+    // Exécution de la requête
+    if ($stmt->execute()) {
+        // La catégorie a été ajoutée avec succès
+        echo "Nouvelle catégorie ajoutée avec succès.";
+    } else {
+        // Erreur lors de l'ajout de la catégorie
+        echo "Erreur lors de l'ajout de la catégorie.";
+    }
 }
 
-if(isset($_POST['ajout']))
-{
-    header ('Location:../reclamation/add.php');
-}
+
 
 ?>
 <!DOCTYPE html>
@@ -67,7 +165,7 @@ if(isset($_POST['ajout']))
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
-                        <img class="rounded-circle" src="" alt="" style="width: 40px; height: 40px;">
+                        <img class="rounded-circle" src="./images/user.jpg" alt="" style="width: 50px; height: 50px;">
                         <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
                     </div>
                     <div class="ms-3">
@@ -101,6 +199,34 @@ if(isset($_POST['ajout']))
             </nav>
             <!-- Navbar End -->
 
+<!-- Ajout du formulaire de filtrage -->
+<form method="POST" action="">
+    <label for="category">Filter by Category:</label>
+    <select name="categoryFilter" id="category">
+        <option value="all">All Categories</option>
+        <?php
+        // Récupérer toutes les catégories depuis la base de données
+        $query = "SELECT idCad, nomCad FROM category"; // Assurez-vous que le nom du champ dans la table 'category' est 'nomCad'
+        $stmt = $conn->query($query);
+
+        // Afficher chaque catégorie comme une option dans le menu déroulant
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $idCad = $row['idCad'];
+            $nomCad = $row['nomCad'];
+            echo "<option value='$idCad'>$nomCad</option>";
+        }
+        ?>
+    </select>
+    <input type="submit" name="filterByCategory" value="Filter">
+</form>
+
+<form method="POST" action="">
+    <label for="minPrice">Min Price:</label>
+    <input type="number" name="minPrice" id="minPrice">
+    <label for="maxPrice">Max Price:</label>
+    <input type="number" name="maxPrice" id="maxPrice">
+    <input type="submit" name="filterByPrice" value="Filter">
+</form>
 
             <!-- Table Start -->
             <div class="container-fluid pt-4 px-4">
@@ -132,8 +258,29 @@ if(isset($_POST['ajout']))
                             <FONT COLOR="WHITE"><?PHP echo $produit['description']; ?></FONT>
                         </td>
                         <td class="align-img">
-                            <FONT COLOR="WHITE"><?PHP echo $produit['category']; ?></FONT>
-                        </td>
+                        <?php
+    // Récupérer le nom de la catégorie en fonction de l'idcad du produit
+    if (isset($produit['idCad'])) { // Vérifiez si le champ ID de catégorie dans le produit est bien 'idCad'
+        $idCad = $produit['idCad'];
+        $query = "SELECT nomCad FROM category WHERE idCad = :idCad"; // Assurez-vous que le nom du champ dans la table 'category' est 'nomCad'
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':idCad', $idCad);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $nomCad = $row['nomCad'];
+            echo "<FONT COLOR='WHITE'>$nomCad</FONT>";
+        } else {
+            echo "<FONT COLOR='WHITE'>N/A</FONT>";
+        }
+    } else {
+        echo "<FONT COLOR='WHITE'>N/A</FONT>";
+    }
+    ?>
+
+
+</td>
                         <td class="align-img">
                             <FONT COLOR="WHITE"><?PHP echo $produit['price']; ?></FONT>
                         </td>
@@ -143,22 +290,97 @@ if(isset($_POST['ajout']))
                                     <input type="submit" name="Supprimer" value="Supprimer" class="btn btn-primary">
                                     <input type="hidden" value=<?PHP echo $produit['id']; ?> name="id">
                                 </form>
+                                 <i class="bi bi-trash"></i>
                             </div>
                         </td>
-                        
+                        <td>
+                        <div class="form-group">
+    <form method="POST" action="">
+        <input type="hidden" value="<?php echo $produit['id']; ?>" name="confirmProductId">
+        <button type="submit" name="confirmButton" value="Confirm" class="btn btn-success">Confirm</button>
+        <i class="bi bi-check-circle"></i>
+    </form>
+</div>
+
+
+
                     </tr>
                     <?PHP
 				        }
 			        ?>
                 </tbody>
             </table>
+            
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-md-6 col-xl-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Nombre de Tableaux</h5>
+                    <?php
+                        // Requête SQL pour compter le nombre de tableaux
+                        $queryCountProducts = "SELECT COUNT(*) AS total FROM produit";
+                        $stmtCountProducts = $conn->query($queryCountProducts);
+                        $rowProducts = $stmtCountProducts->fetch(PDO::FETCH_ASSOC);
+                        $totalProducts = $rowProducts['total'];
+                    ?>
+                    <p class="card-text"><strong><FONT COLOR="BLACK">Nombre de Tableaux total</FONT></strong></p>
+                    <p class="card-text"><?php echo $totalProducts; ?></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6 col-xl-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Nombre de Catégories</h5>
+                    <?php
+                        // Requête SQL pour compter le nombre de catégories
+                        $queryCountCategories = "SELECT COUNT(*) AS total FROM category";
+                        $stmtCountCategories = $conn->query($queryCountCategories);
+                        $rowCategories = $stmtCountCategories->fetch(PDO::FETCH_ASSOC);
+                        $totalCategories = $rowCategories['total'];
+                    ?>
+                    <p class="card-text"><strong><FONT COLOR="BLACK">Nombre de Categories au total</FONT></strong></p>
+                    <p class="card-text"><?php echo $totalCategories; ?></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6 col-xl-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Somme des Prix</h5>
+                    <?php
+                        // Requête SQL pour obtenir la somme des prix
+                        $queryTotalPrice = "SELECT SUM(price) AS total FROM produit";
+                        $stmtTotalPrice = $conn->query($queryTotalPrice);
+                        $rowTotalPrice = $stmtTotalPrice->fetch(PDO::FETCH_ASSOC);
+                        $totalPrice = $rowTotalPrice['total'];
+                    ?>
+                    <p class="card-text"><strong><FONT COLOR="BLACK">Chiffre d'affaires</FONT></strong></p>
+                    <p class="card-text"><?php echo $totalPrice; ?> €</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<form method="POST" action="">
+    <label for="newCategory">Add Category id:</label>
+    <input type="text" name="idCad" id="idCad">
+    <label for="newCategory">Add Category name :</label>
+    <input type="text" name="nomCad" id="nomCad">
+    <input type="submit" name="addCategoryButton" value="Add">
+</form>
             </div>
             <!-- Table End -->
         </div>
+        
         <!-- Content End -->
 
 

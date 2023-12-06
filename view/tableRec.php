@@ -1,8 +1,14 @@
 <?PHP
+	include_once ("C:/xampp/htdocs/Project/config.php");
 	require ("C:/xampp/htdocs/Project/Dashbord/Controller/produitC.php");
+
+  $config = new config();
+ $conn = $config->getConnexion();
 
 	$produit=new produitC();
 	$listeProduit=$produit->afficherProduit();
+
+
     
 if(isset($_POST['submit']))
 {
@@ -13,6 +19,30 @@ if(isset($_POST['ajout']))
 {
     header ('Location:../reclamation/add.php');
 }
+
+if (isset($_POST['filterByCategory'])) {
+    $categoryFilter = $_POST['categoryFilter'];
+    if ($categoryFilter != 'all') {
+        $listeProduit = $produit->filterByCategory($categoryFilter, $conn);
+    } else {
+        $listeProduit = $produit->afficherProduit();
+    }
+}
+
+if (isset($_POST['filterByPrice'])) {
+  $minPrice = $_POST['minPrice'];
+  $maxPrice = $_POST['maxPrice'];
+  
+  if (!empty($minPrice) || !empty($maxPrice)) {
+      $listeProduit = $produit->filterByPriceRange($minPrice, $maxPrice, $conn);
+  } else {
+      // Gérer le cas où aucun prix n'est renseigné
+      // Par exemple, afficher tous les produits
+      $listeProduit = $produit->afficherProduit();
+  }
+}
+
+
 
 ?>
 <!DOCTYPE html>
@@ -66,11 +96,11 @@ if(isset($_POST['ajout']))
             <nav class="site-navigation text-right text-md-center" role="navigation">
               <ul class="site-menu js-clone-nav d-none d-lg-block">
                 <li><a href="index.html">Home</a></li>
-                <li><a href="shop.html">Store</a></li>
+                <li><a href="store.php">Store</a></li>
               
-                <li><a href="about.html">About</a></li>
+                <li class="active"><a href="http://localhost/Project/Dashbord/View/tableRec.php">My Products</a></li>
                 <li class=""><a href="http://localhost/Project/Dashbord/View/addCommande.php">Commande</a></li>
-                <li class="active"><a href="http://localhost/Project/Dashbord/View/add.php">Product</a></li>
+                <li ><a href="http://localhost/Project/Dashbord/View/add.php">Product</a></li>
               </ul>
             </nav>
           </div>
@@ -92,7 +122,7 @@ if(isset($_POST['ajout']))
         <div class="row">
           <div class="col-md-12 mb-0">
             <a href="index.html">Home</a> <span class="mx-2 mb-0">/</span>
-            <strong class="text-black">Products</strong>
+            <strong class="text-black">My Products</strong>
           </div>
         </div>
       </div>
@@ -102,7 +132,7 @@ if(isset($_POST['ajout']))
       <div class="container">
         <div class="row">
           <div class="col-md-12">
-            <h2 class="h3 mb-5 text-black"> Products</h2>
+            <h2 class="h3 mb-5 text-black">My Products</h2>
           </div>
                   <a href="add.php">
                     <button type="ajout" name="actualiser" value="Ajouter" class="btn btn-primary btn-lg btn-block">
@@ -129,7 +159,35 @@ if(isset($_POST['ajout']))
         color: white; /* White text color for table headers */
     }
 </style>
+<form method="POST" action="">
+    <label for="category">Filter by Category:</label>
+    <select name="categoryFilter" id="category">
+        <option value="all">All Categories</option>
+        <?php
+        // Récupérer toutes les catégories depuis la base de données
+        $query = "SELECT idCad, nomCad FROM category"; // Assurez-vous que le nom du champ dans la table 'category' est 'nomCad'
+        $stmt = $conn->query($query);
 
+        // Afficher chaque catégorie comme une option dans le menu déroulant
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $idCad = $row['idCad'];
+            $nomCad = $row['nomCad'];
+            echo "<option value='$idCad'>$nomCad</option>";
+        }
+        ?>
+    </select>
+    <input type="submit" name="filterByCategory" value="Filter">
+</form>
+<form method="POST" action="">
+    <label for="minPrice">Min Price:</label>
+    <input type="number" name="minPrice" id="minPrice">
+    <label for="maxPrice">Max Price:</label>
+    <input type="number" name="maxPrice" id="maxPrice">
+    <input type="submit" name="filterByPrice" value="Filter">
+
+</form>
+<br>
+<br>
                 <thead>
                     <th><FONT COLOR="WHITE">ID</FONT></th>
                     <th><FONT COLOR="WHITE">Title</FONT></th>
@@ -153,8 +211,29 @@ if(isset($_POST['ajout']))
                         </td>
                       
                         <td class="align-img">
-                            <FONT COLOR="BLACK"><?PHP echo $produit['category']; ?></FONT>
-                        </td>
+    <?php
+    // Récupérer le nom de la catégorie en fonction de l'idcad du produit
+    if (isset($produit['idCad'])) { // Vérifiez si le champ ID de catégorie dans le produit est bien 'idCad'
+        $idCad = $produit['idCad'];
+        $query = "SELECT nomCad FROM category WHERE idCad = :idCad"; // Assurez-vous que le nom du champ dans la table 'category' est 'nomCad'
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':idCad', $idCad);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $nomCad = $row['nomCad'];
+            echo "<FONT COLOR='BLACK'>$nomCad</FONT>";
+        } else {
+            echo "<FONT COLOR='BLACK'>N/A</FONT>";
+        }
+    } else {
+        echo "<FONT COLOR='BLACK'>N/A</FONT>";
+    }
+    ?>
+</td>
+
+
                         
                         <td class="align-img">
                             <FONT COLOR="BLACK"><?PHP echo $produit['price']; ?></FONT>
@@ -162,10 +241,10 @@ if(isset($_POST['ajout']))
                         
                         <td>
                             <div class="form-group">
-                                <form method="POST" action="delete.php">
-                                    <input type="submit" name="Supprimer" value="delete" class="btn btn-primary">
-                                    <input type="hidden" value=<?PHP echo $produit['id']; ?> name="id">
-                                </form>
+                            <form method="POST" action="delete.php" onsubmit="return confirm('Are you sure you want to delete this product?')">
+    <input type="submit" name="Supprimer" value="delete" class="btn btn-primary">
+    <input type="hidden" value=<?PHP echo $produit['id']; ?> name="id">
+</form>
                             </div>
                         </td>
                         <td>
@@ -181,6 +260,9 @@ if(isset($_POST['ajout']))
 			        ?>
                 </tbody>
             </table>
+            
+
+
             <footer class="site-footer">
       <div class="container">
         <div class="row">
