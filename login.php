@@ -1,44 +1,38 @@
 <?php
 require_once("config.php");
 
-if($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mail = $_POST["mail"];
     $mp = $_POST["mp"];
-	
-    
+
     $sql = "SELECT * FROM compte WHERE mail = :mail";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(":mail", $mail);
     $stmt->execute();
     $user = $stmt->fetch();
 
-	$id=$user["id"] ;
+    $id = $user["id"];
 
-    if($user) {
-        if($mp == $user["mp"] ) {   // password_verify($mp, $user["mp"] 
-            if($user["type"] == "admin") {
+    if ($user) {
+        if (password_verify($mp, $user["mp"])) {
+            if ($user["type"] == "admin") {
                 session_start();
-                $_SESSION["mail"] = $mail ;       //session
-				if ($user["role"] =="admins")
-				header("Location: /integration//back/backoffice/ajouteradmine.php");
-				else if( ($user["role"] =="produits"))
-				header("Location: /integration//back/backoffice/ajouterprod.php");
-				else if( ($user["role"] =="fournisseurs"))
-				header("Location: /integration//back/backoffice/fournisseurs.php");
-				else if( ($user["role"] =="livraisons"))
-				header("Location: /integration//back/backoffice/afficherlivraison.php");
-				else if( ($user["role"] =="reclamations"))
-				header("Location: /validation//back/backoffice/reclamations.php");
-				else if( ($user["role"] =="commandes"))
-				header("Location: /validation//back/backoffice/commande.php");
-
-
-
-
-
+                $_SESSION["mail"] = $mail;
+                if ($user["role"] == "admins")
+                    header("Location: /integration//back/backoffice/ajouteradmine.php");
+                else if (($user["role"] == "produits"))
+                    header("Location: /integration//back/backoffice/ajouterprod.php");
+                else if (($user["role"] == "fournisseurs"))
+                    header("Location: /integration//back/backoffice/fournisseurs.php");
+                else if (($user["role"] == "livraisons"))
+                    header("Location: /integration//back/backoffice/afficherlivraison.php");
+                else if (($user["role"] == "reclamations"))
+                    header("Location: /validation//back/backoffice/reclamations.php");
+                else if (($user["role"] == "commandes"))
+                    header("Location: /validation//back/backoffice/commande.php");
             } elseif ($user["type"] == "user") {
                 session_start();
-                $_SESSION["id"] = $id;   //session
+                $_SESSION["id"] = $id;
                 header("Location: index.php");
             } else {
                 $message = "Type de compte invalide.";
@@ -53,6 +47,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
+<!-- Your HTML code goes here -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Add your head content here -->
+</head>
+<body>
+
+<!-- Your existing HTML content goes here -->
+
+</body>
+</html>
+
+<script>
+    // Add your existing JavaScript code here
+</script>
 
 
 
@@ -180,7 +190,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         document.getElementById("label2").style.display = "none";
     }
 	function redirectToInscrire() {
-        // Redirect to inscrire.php
         window.location.href = 'inscrire.php';
     }
 

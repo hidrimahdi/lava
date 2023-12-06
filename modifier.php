@@ -100,8 +100,8 @@ $v4=0 ;
 if (isset($_POST["update_nom"])) 
 {
     // Récupérer les valeurs du formulaire
-    $nom = $_POST["nom"];
-    $prenom = $_POST["prenom"];
+    $nom = $_POST["Nom"];
+    $prenom = $_POST["Prenom"];
     $adresse = $_POST["adresse"];
     $num_tel = $_POST["telephone"];
     $date_anniversaire = $_POST["date-anniversaire"];
@@ -129,7 +129,7 @@ if (isset($_POST["update_nom"]))
     if($v1==1 && $v2==1 && $v4 ==1)
     {
         // Mettre à jour les informations de l'utilisateur dans la base de données
-        $sql = "UPDATE compte SET nom = :nom, prenom = :prenom, adresse = :adresse, num_tel = :num_tel, date_anniversaire = :date_anniversaire WHERE id = :id";
+        $sql = "UPDATE compte SET Nom = :nom, Prenom = :prenom, adresse = :adresse, num_tel = :num_tel, date_anniversaire = :date_anniversaire WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(":nom", $nom);
         $stmt->bindParam(":prenom", $prenom);
@@ -297,12 +297,12 @@ if(isset($_POST["update_mp"]))
       <form method="post" >
         <div class="form-container">
           <div class="form-group">
-            <label for="nom">Nom :</label>
-            <input type="text" id="nom" name="nom" value="<?php echo $user["nom"]; ?>" required>
+            <label for="Nom">Nom :</label>
+            <input type="text" id="Nom" name="Nom" value="<?php echo $user["Nom"]; ?>" required>
           </div>
           <div class="form-group">
             <label for="prenom">Prénom :</label>
-            <input type="text" id="prenom" name="prenom" value="<?php echo $user["prenom"]; ?>" required>
+            <input type="text" id="Prenom" name="Prenom" value="<?php echo $user["Prenom"]; ?>" required>
           </div>
           <div class="form-group">
             <label for="adresse">Adresse :</label>

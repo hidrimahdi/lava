@@ -1,107 +1,106 @@
 <?php
-
-// Inclure le fichier de configuration pour établir la connexion à la base de données
 require_once "config.php";
 
-// Initialiser la variable de message
 $message = "";
+$errors = [];
 
-$v3=0 ;
-$v4=0 ;
-$v5=0 ;
-$v4_1=0 ;
-$v5_1=0 ;
-$v6=0 ;
-$v7=0 ;
-$v8=0 ;
+$v3 = 0;
+$v4 = 0;
+$v5 = 0;
+$v4_1 = 0;
+$v5_1 = 0;
+$v6 = 0;
+$v7 = 0;
+$v8 = 0;
 
-// Vérifier si le formulaire a été soumis
+// Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-  // Récupérer les valeurs saisies par l'utilisateur
-  $nom = $_POST["nom"];
-  $prenom = $_POST["prenom"];
-  $mail = $_POST["mail"];
-  $mp = $_POST["mp"];
-  $mp_confirm = $_POST["mp_confirm"];
-  $adresse = $_POST["adresse"];
-  $num_tel = $_POST["num_tel"];
-  $date_anniversaire = $_POST["date_anniversaire"];
+    $nom = $_POST["nom"];
+    $prenom = $_POST["prenom"];
+    $mail = $_POST["mail"];
+    $mp = $_POST["mp"];
+    $mp_confirm = $_POST["mp_confirm"];
+    $adresse = $_POST["adresse"];
+    $num_tel = $_POST["num_tel"];
+    $date_anniversaire = $_POST["date_anniversaire"];
 
-  // Vérifier si l'adresse e-mail est déjà utilisée
-  $query = "SELECT * FROM compte WHERE mail = ?";
-  $stmt = $pdo->prepare($query);
-  $stmt->execute([$mail]);
-  $result = $stmt->fetch();
-  if ($result) {
-    $message3 = "Cette adresse e-mail est déjà utilisée.";
-  }
-  else { $v3=1 ;}
+    // Check if the email is already used
+    $query = "SELECT * FROM compte WHERE mail = ?";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute([$mail]);
 
-    // Vérifier si l'utilisateur a plus de 18 ans
+    if ($stmt->fetch()) {
+        $errors["mail"] = "Cette adresse e-mail est déjà utilisée.";
+    } else {
+        $v3 = 1;
+    }
+
+    // Check if the user is at least 18 years old
     $aujourdhui = new DateTime();
     $date_anniversaire = new DateTime($date_anniversaire);
     $diff = $aujourdhui->diff($date_anniversaire);
+
     if ($diff->y < 18) {
-      $message6 = "Vous devez avoir au moins 18 ans pour vous inscrire.";
-    } 
-	else { $v6=1;	}
+        $errors["date_anniversaire"] = "Vous devez avoir au moins 18 ans pour vous inscrire.";
+    } else {
+        $v6 = 1;
+    }
 
+    // Check if passwords match
+    if ($mp !== $mp_confirm) {
+        $errors["mp"] = "Les mots de passe ne correspondent pas.";
+        $errors["mp_confirm"] = "Les mots de passe ne correspondent pas.";
+    } else {
+        $v4 = 1;
+        $v5 = 1;
+    }
 
-	  if ($mp !== $mp_confirm) {
-        $message5 = "Les mots de passe ne correspondent pas.";
-		$message4 = "Les mots de passe ne correspondent pas.";
-      } 
-	  else
-	  {$v4=1; $v5=1 ;}
+    // Check if the password contains at least one uppercase letter and one special character
+    if (!preg_match('/[A-Z]/', $mp) || !preg_match('/[\W]/', $mp)) {
+        $errors["mp_complexity"] = "Le mot de passe doit contenir au moins une lettre majuscule et un caractère spécial.";
+    } else {
+        $v4_1 = 1;
+        $v5_1 = 1;
+    }
 
-        // Vérifier si le mot de passe contient au moins une lettre majuscule et un caractère spécial
-        if (!preg_match('/[A-Z]/', $mp) || !preg_match('/[\W]/', $mp)) {
-			$message4_1 = "Le mot de passe doit contenir au moins une lettre majuscule et un caractère spécial.";
-			$message5_1 = "Le mot de passe doit contenir au moins une lettre majuscule et un caractère spécial.";
-        } 
-		else
-	  {$v4_1 =1 ; $v5_1=1;}
+    // Check if the number of digits in num_tel is 8
+    if (!preg_match('/^\d{8}$/', $num_tel)) {
+        $errors["num_tel"] = "Le numéro de téléphone doit être composé de 8 chiffres.";
+    } else {
+        $v8 = 1;
+    }
 
-          // Vérifier si le numéro de téléphone contient 8 chiffres
-          if (!preg_match('/^\d{8}$/', $num_tel)) {
-			$message8 = "Le numéro de téléphone doit être composé de 8 chiffres.";
-		}
-		  else
-		  {$v8=1;}
-		  if (strlen($adresse) < 10) {
-			$message7 = "L'adresse doit contenir au moins 10 caractères.";
-		}
-		else
-		{$v7=1;}
-		  if (  $v3==1 && $v4 ==1 && $v5==1 &&  $v4_1 ==1 && $v5_1==1 &&$v6==1 && $v7==1 && $v8==1 )
-		  {
-            // Trouver le nouvel identifiant
-            $query = "SELECT MAX(id) as max_id FROM compte";
-            $stmt = $pdo->query($query);
-            $row = $stmt->fetch();
-            $new_id = $row["max_id"] + 1;
+    // Check if the address has at least 10 characters
+    if (strlen($adresse) < 10) {
+        $errors["adresse"] = "L'adresse doit contenir au moins 10 caractères.";
+    } else {
+        $v7 = 1;
+    }
 
-// Insérer les données dans la table "compte"
-$query = "INSERT INTO compte (id, nom, prenom, mail, mp, adresse, num_tel, date_anniversaire,type) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)";
-$stmt = $pdo->prepare($query);
-$stmt->execute([$new_id, $nom, $prenom, $mail, $mp, $adresse, $num_tel, $date_anniversaire->format('Y-m-d') ,'user']);
-		  
+    if ($v3 == 1 && $v4 == 1 && $v5 == 1 && $v4_1 == 1 && $v5_1 == 1 && $v6 == 1 && $v7 == 1 && $v8 == 1) {
+        // Hash the password
+        $hashedPassword = password_hash($mp, PASSWORD_DEFAULT);
 
+        // Find the new identifier
+        $query = "SELECT MAX(id) as max_id FROM compte";
+        $stmt = $pdo->query($query);
+        $row = $stmt->fetch();
+        $new_id = $row["max_id"] + 1;
 
-echo "Inscription réussie !";
-header("Location: login.php");
+        // Insert data into the "compte" table
+        $query = "INSERT INTO compte (id, Nom, Prenom, mail, mp, adresse, num_tel, date_anniversaire, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$new_id, $nom, $prenom, $mail, $hashedPassword, $adresse, $num_tel, $date_anniversaire->format('Y-m-d'), 'user']);
 
-          }
-		  echo "Inscription echouée !";
-        
+        echo "Inscription réussie !";
+        header("Location: login.php");
+        exit();
+    }
 
-
-
-		}
+    echo "Inscription echouée !";
+}
 ?>
-
-
 
 
 <!DOCTYPE html>
@@ -140,8 +139,7 @@ header("Location: login.php");
 	  <ul class="menu">
 		<li><a href="index.html">Acceuil</a></li>
 		<li><a href="produit.html">Produits</a></li>
-		<li><a href="#about_us">A Propos</a></li>
-		<li><a href="#about_us">Réclamations</a></li>
+		
 
 		<li><a href="login.php"><img src="images/1.png" alt="compte" width="5%"></a></li>
         <li><a href="login.php">login</a></li>

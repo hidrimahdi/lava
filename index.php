@@ -31,8 +31,8 @@
         <section id="home">
             <div class="left">
                 <h4>Our New products</h4>
-                <h1>NATURAL PRODUCTS</h1>
-                <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ipsa sequi eveniet sed quidem reprehenderit libero officiis.</p>
+                <h1>ARTISTIC PRODUCTS</h1>
+                <p>YOU CAN PURCHASE AND BUY ARTS HERE</p>
                  <button><a href="#">commander maintenant</a></button>
             </div>
             <div class="right">

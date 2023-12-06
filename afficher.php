@@ -125,17 +125,12 @@ if (isset($_POST["update_modifier"])) {
   <body>
 
   <header>
-  <a href="#" class="logo1"><i class="fas fa-seedling"></i>EcoTrust</a>
+  <a href="#" class="logo1"><i class="fas fa-seedling"></i>Virtuart</a>
         <ul class="menu">
        
             <li><a href="index.php">Acceuil</a></li>
             <li><a href="produitt.php">Produits</a></li>
-            <li><a href="index.php">A Propos</a></li>
-            <li><a href="reservation.php">Reservation</a></li>
-            <li><a href="Reclamation.php">Reclamation</a></li>
-            <li><a href="livraison.php">Livraison</a></li>
-            <li><a href="Panier.php">Panier</a></li>
-            <li><a href="afficher.php"><img src="images/1.png" alt="compte" width="20px"></a></li>
+            
             <li><a href="login.php">Logout</a></li>
 
         </ul>
@@ -164,11 +159,11 @@ if (isset($_POST["update_modifier"])) {
         <div class="form-container">
           <div class="form-group">
             <label for="nom">Nom :</label>
-            <input type="text" id="nom" name="nom" value="<?php echo $user["nom"]; ?>" readonly>
+            <input type="text" id="Nom" name="Nom" value="<?php echo $user["Nom"]; ?>" readonly>
           </div>
           <div class="form-group">
             <label for="prenom">Prénom :</label>
-            <input type="text" id="prenom" name="prenom" value="<?php echo $user["prenom"]; ?>" readonly>
+            <input type="text" id="Prenom" name="Prenom" value="<?php echo $user["Prenom"]; ?>" readonly>
           </div>
           <div class="form-group">
             <label for="adresse">Adresse :</label>
